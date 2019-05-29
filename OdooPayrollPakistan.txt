@@ -1,0 +1,281 @@
+from odoo import models, fields, api
+
+class x_fine(models.Model):
+
+    _name = 'x.fine'
+
+    name = fields.Char("enter fine type")
+
+    _amount = 'x.fine'
+
+    amount = fields.Char("enter fine amount")
+
+odoo>
+
+  <data>
+
+    <!-- explicit list view definition -->
+
+    <record model="ir.ui.view" id="x_fine.list">
+
+      <field name="name">x_fine list</field>
+
+      <field name="model">x.fine</field>
+
+      <field name="arch" type="xml">
+
+        <tree>
+
+          <field name="name"/>
+
+          <field name="amount"/>
+
+       </tree>
+
+      </field>
+
+    </record>
+
+<act_window id="action_x_fine" name="Fine Type" res_model="x.fine" view_mode="tree,form"/>
+
+<menuitem   id="menu_x_fine" parent="hr_payroll.menu_hr_payroll_root"
+
+  name="Fine Type" action="action_x_fine" />
+
+  </data>
+
+</odoo>
+
+# -*- coding: utf-8 -*-
+
+{
+
+    'name': "Fine Module",
+
+    'summary': """
+
+       to define fine types""",
+
+    'description': """
+
+        defining fine types
+
+    """,
+
+    'author': "Alisaif Bilgrami",
+
+    'website': "http://www.notali.com",
+
+    # Categories can be used to filter modules in modules listing
+
+    # Check https://github.com/odoo/odoo/blob/master/odoo/addons/base/module/module_data.xml
+
+    # for the full list
+
+    'category': 'Payroll',
+
+    'version': '0.1',
+
+    # any module necessary for this one to work correctly
+
+    'depends': ['base'],
+
+    # always loaded
+
+    'data': [
+
+        # 'security/ir.model.access.csv',
+
+        'views/x_fine_type_view.xml'
+
+    ],
+
+}
+
+from odoo import models, fields, api
+
+class x_penalties(models.Model):
+
+                pemployee = fields.Many2one('hr.employee', 'employee')
+
+                pfinetype = fields.Many2one('x.fine','fine type')
+
+                pfineamount = fields.Integer("enter fine amount")
+
+                pdatefrom = fields.Date("enter effective date from")
+
+                pdateto = fields.Date("enter effective date to")
+
+<odoo>
+
+  <data>
+
+    <!-- explicit list view definition -->
+
+    <record model="ir.ui.view" id="x_penalties.list">
+
+      <field name="name">x_penalties list</field>
+
+      <field name="model">x_penalties</field>
+
+      <field name="arch" type="xml">
+
+        <tree>
+
+          <field name="pemployee"/>
+
+          <field name="pfinetype"/>
+
+          <field name="pfineamount"/>
+
+          <field name="pdatefrom"/>
+
+          <field name="pdateto"/>
+
+       </tree>
+
+      </field>
+
+    </record>
+
+<act_window id="action_x_penalties" name="Penalties" res_model="x_penalties" view_mode="tree,form"/>
+
+<menuitem   id="menu_x_penalties" parent="hr_payroll.menu_hr_payroll_root" name="Penalties" action="action_x_penalties" />
+
+  </data>
+
+</odoo>
+
+# -*- coding: utf-8 -*-
+
+{
+
+    'name': "Penalties Extension",
+
+    'summary': """
+
+       to map fines to employees""",
+
+    'description': """
+
+        to fine employees
+
+    """,
+
+    'author': "Sajjad Wazir",
+
+    'website': "http://www.notSajjad.com",
+
+    # Categories can be used to filter modules in modules listing
+
+    # Check https://github.com/odoo/odoo/blob/master/odoo/addons/base/module/module_data.xml
+
+    # for the full list
+
+    'category': 'Payroll',
+
+    'version': '0.1',
+
+    # any module necessary for this one to work correctly
+
+    'depends': ['base','hr_payroll'],
+
+    # always loaded
+
+    'data': [
+
+        # 'security/ir.model.access.csv',
+
+        'views/x_penalties_views.xml'     
+
+    ],
+
+}
+
+# -*- coding: utf-8 -*-
+
+from odoo import models, fields, api
+
+class PayrollCustomizations(models.Model):
+
+                _inherit = 'hr.payslip'
+
+                @api.multi
+
+                def salaryfunction(self,empid,finetype,date_from,date_to):
+
+                                # fine=0
+
+                                # if(finetype=="NIC"):
+
+                                #             fine=1
+
+                                # if(finetype=="HUSF"):
+
+                                #             fine=2
+
+                                # if(finetype=="LOC"):
+
+                                #             fine=4
+
+                                # if(finetype=="GUAR"):
+
+                                #             fine=3
+
+                                fines = self.env['x.fine'].search([('name','=',"finetype")])
+
+                                penalty = self.env['x_penalties'].search(['&', '&', ('pemployee','=',empid), ('pfinetype','=',fines.id), '|', ('pdateto','=',None), '|', '&' ,('pdateto','>=',date_from),('pdateto','<=',date_to), '&',('pdatefrom','>=',date_from),('pdatefrom','<=',date_to)])
+
+                                #penalty = self.env['x_penalties'].search(['&', '&', ('pemployee','=',empid),('pfinetype','=',fine), '|', '&' ,('pdateto','>=',date_from),('pdateto','<=',date_to), '&',('pdatefrom','>=',date_from),('pdatefrom','<=',date_to)])
+
+                                fine_amt=0
+
+                                for i in penalty:
+
+                                                fine_amt= fine_amt+i.pfineamount
+
+                                return  fine_amt
+
+# -*- coding: utf-8 -*-
+
+{
+
+    'name': "Payroll Pakistan",
+
+    'summary': """
+
+       Human Resource Payroll""",
+
+    'description': """
+
+        Human Resource Payroll
+
+    """,
+
+    'author': "Ahsan Zaheer",
+
+    'website': "http://www.notahsan.com",
+
+    # Categories can be used to filter modules in modules listing
+
+    # Check https://github.com/odoo/odoo/blob/master/odoo/addons/base/module/module_data.xml
+
+    # for the full list
+
+    'category': 'hr',
+
+    'version': '0.1',
+
+    # any module necessary for this one to work correctly
+
+    'depends': ['base','hr_payroll'],
+
+    # always loaded
+
+    'data': [
+
+        # 'security/ir.model.access.csv',
+
+    ],
+
+}
